@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktiver Lernplan: Französisch A1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Focus Palette (Stone, Teal, White) -->
+    <!-- Application Structure Plan: A 4-week, tab-based interactive learning plan. The user navigates between weeks, each containing daily, collapsible tasks (vocabulary, grammar, exercises). This structure breaks down the content into manageable chunks, ideal for a beginner, preventing overwhelm. A central, filterable vocabulary list serves as a constant reference tool. The dashboard provides a high-level overview with a progress chart to motivate the user. This is more engaging than a linear document. -->
+    <!-- Visualization & Content Choices: Report Info: PDF Grammar Units -> Goal: Structure the learning journey -> Viz/Presentation: Donut Chart (Chart.js) showing topic distribution over 4 weeks. Interaction: None, it's a static overview. Justification: Provides a quick, visual summary of the learning path. Report Info: Vocabulary List -> Goal: Active recall practice -> Viz/Presentation: HTML/CSS flashcards. Interaction: Click to flip. Justification: More effective for memorization than a static list. Report Info: Weekly tasks -> Goal: Guided learning -> Viz/Presentation: Collapsible accordion sections. Interaction: Click to expand/collapse. Justification: Keeps the UI clean and focused on the current day's tasks. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+        }
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background-color: #0d9488; /* teal-600 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .task-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 1rem;
+        }
+        .vocab-card {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .vocab-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            min-height: 80px;
+        }
+        .vocab-card.is-flipped .vocab-card-inner {
+            transform: rotateY(180deg);
+        }
+        .vocab-card-front, .vocab-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e7e5e4; /* stone-200 */
+        }
+        .vocab-card-front {
+            background-color: #fcfcfc;
+        }
+        .vocab-card-back {
+            background-color: #f0fdfa; /* teal-50 */
+            color: #134e4a; /* teal-900 */
+            transform: rotateY(180deg);
+        }
+        .accordion-content {
+            display: none;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <div class="main-container p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-teal-700">Interaktiver Lernplan</h1>
+            <p class="text-lg text-stone-600 mt-2">Dein 4-Wochen-Weg zum Französisch-Grundwissen (A1)</p>
+        </header>
+
+        <main>
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="task-card mb-8">
+                <h2 class="text-2xl font-bold mb-4 text-center">Dein Lernfortschritt</h2>
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <div class="w-full md:w-2/3">
+                        <p class="text-stone-700 mb-4">
+                            Willkommen zu deinem persönlichen Französisch-Lernplan! Dieser Plan ist speziell für Anfänger ohne Vorkenntnisse konzipiert. Er führt dich in vier Wochen durch die wichtigsten Grundlagen der Grammatik aus deinem Lehrmittel (Unité 1-5) und den dazugehörigen Wortschatz. Wähle unten eine Woche aus, um mit deinen täglichen Aufgaben zu beginnen. Viel Erfolg!
+                        </p>
+                        <div class="w-full bg-stone-200 rounded-full h-4 mb-4">
+                            <div id="progressBar" class="bg-teal-500 h-4 rounded-full" style="width: 0%;"></div>
+                        </div>
+                        <p id="progressText" class="text-center font-semibold text-teal-700">Wähle eine Woche, um zu starten!</p>
+                    </div>
+                    <div class="w-full md:w-1/3">
+                         <div class="chart-container">
+                            <canvas id="planChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigation Tabs -->
+            <nav id="week-navigation" class="flex flex-wrap justify-center gap-2 mb-8">
+                <button data-week="1" class="tab-btn week-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Woche 1</button>
+                <button data-week="2" class="tab-btn week-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Woche 2</button>
+                <button data-week="3" class="tab-btn week-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Woche 3</button>
+                <button data-week="4" class="tab-btn week-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Woche 4</button>
+                <button data-week="5" class="tab-btn week-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Wortschatz</button>
+            </nav>
+
+            <!-- Content Sections -->
+            <div id="content-container">
+                <!-- Weeks Content will be injected here by JS -->
+            </div>
+
+            <!-- Vocabulary Section -->
+            <section id="week-5" class="week-content hidden">
+                 <div class="task-card">
+                    <h2 class="text-2xl font-bold mb-4">Gesamter Wortschatz</h2>
+                    <p class="mb-4">Hier findest du alle Vokabeln. Du kannst sie nach Kategorie filtern oder direkt nach einem Wort suchen.</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <input type="text" id="vocabSearch" placeholder="Suchen..." class="w-full md:w-auto flex-grow p-2 border border-stone-300 rounded-md">
+                        <select id="vocabFilter" class="p-2 border border-stone-300 rounded-md">
+                            <option value="all">Alle Kategorien</option>
+                        </select>
+                    </div>
+                    <div id="full-vocab-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <!-- Full vocab list will be injected here -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const vocabulary = {
+                "Wichtige Lernbegriffe": [
+                    { fr: "le verbe", de: "das Verb" },
+                    { fr: "le nom", de: "das Nomen" },
+                    { fr: "l'adjectif (m)", de: "das Adjektiv" },
+                    { fr: "le présent", de: "die Gegenwart (Zeitform)" },
+                    { fr: "la question", de: "die Frage" },
+                    { fr: "la phrase", de: "der Satz" },
+                    { fr: "singulier", de: "Einzahl" },
+                    { fr: "pluriel", de: "Mehrzahl" },
+                ],
+                "La vie et les relations": [
+                    { fr: "la vie", de: "das Leben" }, { fr: "la vie personnelle", de: "Persönliches Leben / das private Leben" },
+                    { fr: "avoir des enfants", de: "Kinder haben" }, { fr: "s'installer", de: "sich einrichten, sich niederlassen" },
+                    { fr: "se marier avec quelqu'un", de: "jemanden heiraten" }, { fr: "mourir", de: "sterben, aussterben" },
+                    { fr: "la naissance", de: "die Geburt" }, { fr: "naître", de: "geboren werden" },
+                    { fr: "en ville", de: "in der Stadt" }, { fr: "en banlieue", de: "im Vorort" },
+                    { fr: "à la campagne", de: "auf dem Land" }, { fr: "se séparer", de: "sich trennen" },
+                    { fr: "la vie professionnelle", de: "das Berufsleben, das Arbeitsleben" }, { fr: "s'associer à quelqu'un", de: "sich mit jmdm. assoziieren / zusammenschliessen" },
+                    { fr: "un célibataire / une célibataire", de: "ein Single /ein Junggeselle/ eine Junggesellin" }, { fr: "être célibataire", de: "ledig sein / Single sein" },
+                    { fr: "un citadin/une citadine", de: "ein Stadtbewohner, eine Stadtbewohnerin" }, { fr: "un couple", de: "ein Paar; ein Ehepaar" },
+                    { fr: "être en couple", de: "ein Paar sein, in einer Beziehung sein" }, { fr: "déménager", de: "ausziehen, umziehen, wegziehen" },
+                    { fr: "grandir", de: "wachsen" }, { fr: "faire la connaissance de quelqu'un", de: "jemanden kennen lernen" },
+                ],
+                "Berufsleben und Karriere": [
+                    { fr: "débuter sa vie, sa carrière", de: "sein Leben beginnen / seine Karriere starten" }, { fr: "être acteur/actrice", de: "ein Schauspieler /eine Schauspielerin sein" },
+                    { fr: "être comédien/comédienne", de: "ein Komödiant / eine Komödiantin sein" }, { fr: "être musicien/musicienne", de: "ein Musiker/ eine Musikerin sein" },
+                    { fr: "être danseur/danseuse", de: "ein Tänzer/ eine Tänzerin sein" }, { fr: "travailler", de: "arbeiten" },
+                    { fr: "faire ses débuts dans quelque chose", de: "sein Debüt mit etwas geben /in etwas debütieren / um etwas zu beginnen" },
+                ],
+                "Freizeit, Hobbys und Kultur": [
+                    { fr: "s'intéresser à quelque chose", de: "sich für etwas interessieren" }, { fr: "le loisir", de: "die Freizeitbeschäftigung, das Hobby, die Freizeit" },
+                    { fr: "la passion", de: "die Leidenschaft" }, { fr: "avoir une passion", de: "eine Leidenschaft haben" },
+                    { fr: "être passionné , passionnée", de: "leidenschaftlich sein" }, { fr: "pratiquer une activité", de: "etwas aktiv betreiben, sich an einer Tätigkeit beteiligen" },
+                    { fr: "quelques activités", de: "Einige Aktivitäten" }, { fr: "faire du théâtre", de: "Theater spielen" },
+                    { fr: "faire du sport", de: "Sport machen/treiben" }, { fr: "faire de la musique", de: "Musik spielen/machen" },
+                    { fr: "le temps libre", de: "die Freizeit" }, { fr: "le chant", de: "der Gesang" },
+                    { fr: "la comédie", de: "die Komödie" }, { fr: "la danse", de: "der Tanz" },
+                    { fr: "la musique", de: "die Musik" }, { fr: "jouer de la musique", de: "Musik spielen/ musizieren" },
+                    { fr: "les loisirs", de: "die Freizeit" }, { fr: "les sorties", de: "die Ausgehmöglichkeiten" },
+                    { fr: "le cinéma", de: "das Kino" }, { fr: "l'exposition (f)", de: "die Ausstellung" },
+                    { fr: "le festival", de: "das Festival" }, { fr: "la pièce de théâtre", de: "das Theaterstück" },
+                    { fr: "le théâtre", de: "das Theater" }, { fr: "le salon", de: "die Messe" },
+                    { fr: "sortir", de: "ausgehen, hinausgehen, herauskommen" }, { fr: "aller au cinéma", de: "ins Kino gehen" },
+                    { fr: "aller à un festival", de: "zu einem Festival gehen" }, { fr: "assister à un spectacle de...", de: "eine ...-Vorstellung besuchen, eine Show besuchen" },
+                    { fr: "écouter un concert", de: "ein Konzert (an)hören" }, { fr: "visiter une expo(sition)", de: "eine Ausstellung besuchen" },
+                    { fr: "voir une pièce de théâtre", de: "ein Theaterstück ansehen" }, { fr: "le spectacle", de: "das Spektakel, das Schauspiel, die Show, die Vorstellung" },
+                    { fr: "le concert", de: "das Konzert" }, { fr: "la peinture", de: "die Malerei, das Gemälde, das Malen" },
+                    { fr: "la sculpture", de: "die Skulptur, die Bildhauerei" },
+                ],
+                "Sport": [
+                    { fr: "le football (le foot)", de: "der Fussball" }, { fr: "la gymnastique, la gym", de: "das Turnen, die Gymnastik" },
+                    { fr: "quelques activités", de: "Einige Aktivitäten" }, { fr: "le canoë-kayak", de: "das Kanu-das Kajak ,der Kanusport" },
+                    { fr: "l'escalade (f)", de: "das Klettern" }, { fr: "l'escrime (f)", de: "das Fechten" },
+                    { fr: "le judo", de: "das Judo" }, { fr: "la pétanque", de: "das Boulespiel" },
+                    { fr: "le tir à l'arc", de: "das Bogenschiessen" }, { fr: "le vélo", de: "das Fahrrad; das Fahrradfahren" },
+                    { fr: "pratiquer un sport", de: "einen Sport ausüben, Sport treiben" }, { fr: "la boxe", de: "das Boxen" },
+                    { fr: "l'équitation (faire du cheval)", de: "das Reiten (reiten)" },
+                ],
+                "Wettbewerb und Spiele": [
+                    { fr: "la compétition", de: "der Wettkampf" }, { fr: "le concours", de: "der Wettbewerb" },
+                    { fr: "la course", de: "der Lauf, das Rennen" }, { fr: "le match", de: "das Spiel, der Match" },
+                    { fr: "les jeux", de: "die Spiele" }, { fr: "le jeu de société", de: "das Gesellschaftsspiel" },
+                    { fr: "les échecs", de: "das Schachspiel" }, { fr: "les dominos", de: "das Dominospiel" },
+                    { fr: "le jeu de dames", de: "das Damespiel" }, { fr: "le scrabble", de: "das Scrabble" },
+                    { fr: "le jeu de cartes", de: "das Kartenspiel" }, { fr: "la belote", de: "Belote frz. Kartenspiel" },
+                    { fr: "le tarot", de: "das Tarotspiel" }, { fr: "le jeu de hasard", de: "das Glücksspiel" },
+                    { fr: "le loto", de: "das Lotto" }, { fr: "les jeux de dés", de: "das Würfelspiel" },
+                    { fr: "le jeu en ligne", de: "das Online-Spiel" }, { fr: "le jeu vidéo", de: "das Videospiel, , das Computerspiel, das Game" },
+                    { fr: "la console de jeux", de: "die Spielkonsole" }, { fr: "le poker", de: "das Poker" },
+                    { fr: "la roulette", de: "das Roulette" },
+                ],
+                "Erfolg und Misserfolg": [
+                    { fr: "réussir quelque chose", de: "etwas erreichen" }, { fr: "un amateur/une amatrice", de: "ein Liebhaber/eine Liebhaberin" },
+                    { fr: "être amateur de quelque chose", de: "sich an etwas erfreuen / etwas lieben" }, { fr: "l'amateur (m), l'amatrice (f)", de: "der Amateur, die Amateurin" },
+                    { fr: "le professionnel, la professionnelle", de: "der/die Fachmann, -frau, Profi" }, { fr: "un débutant/une débutante", de: "ein Anfänger/eine Anfängerin" },
+                    { fr: "gagner", de: "gewinnen, siegen" }, { fr: "perdre", de: "verlieren" },
+                    { fr: "le joueur, la joueuse", de: "der Spieler, die Spielerin" }, { fr: "le vainqueur, la vainqueure", de: "der Sieger, die Siegerin, der Gewinner, die Gewinnerin" },
+                    { fr: "le gagnant, la gagnante", de: "der Gewinner, die Gewinnerin" }, { fr: "le perdant, la perdante", de: "der Verlierer, die Verliererin" },
+                    { fr: "le champion, la championne", de: "der Meister, die Meisterin, der Champion" }, { fr: "le théâtre", de: "das Theater" },
+                ]
+            };
+
+            const learningPlan = {
+                1: {
+                    title: "Woche 1: Die Grundlagen",
+                    description: "In dieser Woche lernst du die absolut wichtigsten Verben 'sein' und 'haben' sowie grundlegende Satzstrukturen. Das ist die Basis für alles Weitere!",
+                    tasks: [
+                        { day: "Tag 1-2: Vokabeln & Grammatik 1", content: `<h3>Grammatik: Unité 1 (Seite 6-8)</h3><p>Fokus: Die Verben <strong>être</strong> (sein) und <strong>avoir</strong> (haben) im Präsens. Diese Verben sind unregelmässig, aber extrem wichtig. Lerne ihre Formen auswendig.</p><p><strong>être:</strong> je suis, tu es, il/elle/on est, nous sommes, vous êtes, ils/elles sont.</p><p><strong>avoir:</strong> j'ai, tu as, il/elle/on a, nous avons, vous avez, ils/elles ont.</p><p>Bearbeite die Übungen auf Seite 8.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorien "Wichtige Lernbegriffe" und "La vie et les relations".</p>`, vocabCategories: ["Wichtige Lernbegriffe", "La vie et les relations"]},
+                        { day: "Tag 3-4: Grammatik 2", content: `<h3>Grammatik: Unité 2 (Seite 9-11)</h3><p>Fokus: Die Ausdrücke <strong>Il y a</strong> (Es gibt) und <strong>C'est / Ce sont</strong> (Das ist / Das sind). Merke dir: 'Il y a' ist unveränderlich. 'C'est' benutzt du für die Einzahl, 'Ce sont' für die Mehrzahl.</p><p>Bearbeite die Übungen auf Seite 11.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Berufsleben und Karriere".</p>`, vocabCategories: ["Berufsleben und Karriere"]},
+                        { day: "Tag 5-7: Wiederholung & Übung", content: `<h3>Wiederholung</h3><p>Wiederhole die Konjugationen von 'être' und 'avoir'. Lies die Dialoge auf Seite 6 und 9 nochmals laut vor. Wiederhole alle Vokabeln dieser Woche.</p><h3>Zusatzübung</h3><p>Bilde einfache Sätze. Beispiel: "Je suis un étudiant." (Ich bin ein Student.), "Il y a un livre sur la table." (Es gibt ein Buch auf dem Tisch.), "C'est une actrice." (Das ist eine Schauspielerin.)</p>`}
+                    ]
+                },
+                2: {
+                    title: "Woche 2: Regelmässige Verben & Alltag",
+                    description: "Jetzt wird es systematisch! Du lernst die grösste Gruppe von Verben im Französischen kennen und wie man einfache Fragen stellt. Ausserdem lernst du zwei wichtige Alltagsverben.",
+                    tasks: [
+                        { day: "Tag 1-2: Grammatik 3", content: `<h3>Grammatik: Unité 3 (Seite 12-14)</h3><p>Fokus: Verben auf <strong>-er</strong> im Präsens (1. Gruppe). Das ist die grösste Gruppe! Die Endungen sind immer gleich: -e, -es, -e, -ons, -ez, -ent. Beispiel mit 'parler' (sprechen): je parle, tu parles, il parle, nous parlons, vous parlez, ils parlent.</p><p>Lerne auch die Fragestellungen (z.B. "Est-ce que..."). Bearbeite die Übungen auf Seite 14.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Freizeit, Hobbys und Kultur".</p>`, vocabCategories: ["Freizeit, Hobbys und Kultur"]},
+                        { day: "Tag 3-4: Grammatik 4", content: `<h3>Grammatik: Unité 4 (Seite 15-17)</h3><p>Fokus: Die Verben <strong>faire</strong> (machen/tun) und <strong>prendre</strong> (nehmen). Beide sind sehr häufig und unregelmässig.</p><p><strong>faire:</strong> je fais, tu fais, il fait, nous faisons, vous faites, ils font.</p><p><strong>prendre:</strong> je prends, tu prends, il prend, nous prenons, vous prenez, ils prennent.</p><p>Bearbeite die Übungen auf Seite 17.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Sport".</p>`, vocabCategories: ["Sport"]},
+                        { day: "Tag 5-7: Wiederholung & Übung", content: `<h3>Wiederholung</h3><p>Konjugiere die Verben 'travailler' (arbeiten) und 's'intéresser' (sich interessieren) im Präsens. Wiederhole die Formen von 'faire' und 'prendre'. Wiederhole alle Vokabeln dieser Woche.</p><h3>Zusatzübung</h3><p>Schreibe Sätze über deine Hobbys. Beispiel: "Je fais du sport." (Ich mache Sport.), "Nous faisons de la musique." (Wir machen Musik.), "Vous prenez le bus." (Ihr nehmt den Bus.)</p>`}
+                    ]
+                },
+                3: {
+                    title: "Woche 3: Bewegung & Pläne",
+                    description: "In dieser Woche dreht sich alles um Bewegung. Du lernst, wie du sagst, wohin du gehst, woher du kommst und wann du aufbrichst.",
+                    tasks: [
+                        { day: "Tag 1-3: Grammatik 5", content: `<h3>Grammatik: Unité 5 (Seite 18-20)</h3><p>Fokus: Die Verben <strong>aller</strong> (gehen), <strong>venir</strong> (kommen) und <strong>partir</strong> (weggehen/abfahren). Alle drei sind unregelmässig und sehr wichtig für Alltagsgespräche.</p><p><strong>aller:</strong> je vais, tu vas, il va, nous allons, vous allez, ils vont.</p><p><strong>venir:</strong> je viens, tu viens, il vient, nous venons, vous venez, ils viennent.</p><p><strong>partir:</strong> je pars, tu pars, il part, nous partons, vous partez, ils partent.</p><p>Bearbeite die Übungen auf Seite 20.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Wettbewerb und Spiele".</p>`, vocabCategories: ["Wettbewerb und Spiele"]},
+                        { day: "Tag 4-5: Wortschatz erweitern", content: `<h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Erfolg und Misserfolg".</p><h3>Wiederholung</h3><p>Wiederhole die Konjugationen von 'aller', 'venir' und 'partir' intensiv.</p>`, vocabCategories: ["Erfolg und Misserfolg"]},
+                        { day: "Tag 6-7: Anwendung & Kreativität", content: `<h3>Anwendung</h3><p>Lies die Dialoge von Unité 5 (Seite 18) noch einmal laut. Versuche, die Rollen zu wechseln.</p><h3>Zusatzübung</h3><p>Beschreibe einen typischen Tag von dir mit den neuen Verben. Beispiel: "Le matin, je vais au travail. Le soir, je viens de la bibliothèque. Je pars en vacances en juillet." (Morgens gehe ich zur Arbeit. Abends komme ich aus der Bibliothek. Ich fahre im Juli in den Urlaub.)</p>`}
+                    ]
+                },
+                4: {
+                    title: "Woche 4: Festigung & Bilan",
+                    description: "Die letzte Woche! Jetzt bringen wir alles zusammen. Du wiederholst die Grammatik der ersten fünf Lektionen und testest dein Wissen mit den Bilan-Übungen.",
+                    tasks: [
+                        { day: "Tag 1-3: Bilan 1", content: `<h3>Grammatik: Bilan N° 1 (Seite 21-23)</h3><p>Fokus: Wiederholung aller bisherigen Grammatikthemen. Bearbeite die Übungen auf den Seiten 21 bis 23. Schlage bei Unsicherheiten in den jeweiligen Kapiteln nach. Das ist der wichtigste Test für dich selbst!</p>`},
+                        { day: "Tag 4-5: Wortschatz-Marathon", content: `<h3>Wortschatz-Wiederholung</h3><p>Wiederhole ALLE Vokabeln aus den letzten drei Wochen. Nutze die interaktiven Karteikarten und die Filterfunktion im Wortschatz-Bereich.</p>`},
+                        { day: "Tag 6-7: Finale Wiederholung & Ausblick", content: `<h3>Abschluss</h3><p>Gratuliere! Du hast die Grundlagen geschafft. Lies noch einmal alle Dialoge von Unité 1 bis 5. Du wirst merken, dass du jetzt viel mehr verstehst. Was möchtest du als Nächstes lernen?</p>`}
+                    ]
+                }
+            };
+            
+            const contentContainer = document.getElementById('content-container');
+            const weekButtons = document.querySelectorAll('.week-btn');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+
+            function createVocabCards(categories) {
+                let html = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">';
+                categories.forEach(cat => {
+                    if (vocabulary[cat]) {
+                        vocabulary[cat].forEach(voc => {
+                            html += `
+                                <div class="vocab-card">
+                                    <div class="vocab-card-inner">
+                                        <div class="vocab-card-front">${voc.fr}</div>
+                                        <div class="vocab-card-back">${voc.de}</div>
+                                    </div>
+                                </div>`;
+                        });
+                    }
+                });
+                html += '</div>';
+                return html;
+            }
+            
+            function createAccordion(tasks) {
+                let html = '';
+                tasks.forEach((task, index) => {
+                    html += `
+                    <div class="task-card">
+                        <button class="accordion-header w-full text-left">
+                            <h3 class="text-xl font-semibold text-teal-700 flex justify-between items-center">
+                                ${task.day}
+                                <span class="transform transition-transform duration-300 ">▼</span>
+                            </h3>
+                        </button>
+                        <div class="accordion-content mt-4 text-stone-700">
+                            ${task.content}
+                            ${task.vocabCategories ? createVocabCards(task.vocabCategories) : ''}
+                        </div>
+                    </div>`;
+                });
+                return html;
+            }
+
+            function generateWeekContent() {
+                for (const weekNum in learningPlan) {
+                    const weekData = learningPlan[weekNum];
+                    const section = document.createElement('section');
+                    section.id = `week-${weekNum}`;
+                    section.className = 'week-content hidden';
+                    section.innerHTML = `
+                        <div class="text-center mb-6 p-6 bg-white rounded-lg shadow-md">
+                            <h2 class="text-3xl font-bold">${weekData.title}</h2>
+                            <p class="mt-2 text-stone-600">${weekData.description}</p>
+                        </div>
+                        <div>
+                            ${createAccordion(weekData.tasks)}
+                        </div>
+                    `;
+                    contentContainer.appendChild(section);
+                }
+            }
+            
+            function showWeek(weekNumber) {
+                document.querySelectorAll('.week-content').forEach(el => el.classList.add('hidden'));
+                const activeWeek = document.getElementById(`week-${weekNumber}`);
+                if (activeWeek) {
+                    activeWeek.classList.remove('hidden');
+                }
+
+                weekButtons.forEach(btn => btn.classList.remove('active'));
+                const activeButton = document.querySelector(`.week-btn[data-week="${weekNumber}"]`);
+                if(activeButton) {
+                    activeButton.classList.add('active');
+                }
+
+                const progress = weekNumber <= 4 ? (weekNumber / 4) * 100 : 100;
+                progressBar.style.width = `${progress}%`;
+                
+                if (weekNumber <= 4) {
+                    progressText.textContent = `Du bearbeitest gerade Woche ${weekNumber} von 4.`;
+                } else if (weekNumber == 5) {
+                     progressText.textContent = `Wortschatz-Modus. Dein Lernplan ist zu 100% abgeschlossen!`;
+                }
+            }
+
+            generateWeekContent();
+
+            weekButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const weekNum = button.dataset.week;
+                    showWeek(weekNum);
+                });
+            });
+
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const icon = header.querySelector('span');
+                    
+                    if (content.style.display === "block") {
+                        content.style.display = "none";
+                        icon.style.transform = "rotate(0deg)";
+                    } else {
+                        content.style.display = "block";
+                        icon.style.transform = "rotate(180deg)";
+                    }
+                });
+            });
+            
+            document.body.addEventListener('click', function(e) {
+                if (e.target.closest('.vocab-card')) {
+                    e.target.closest('.vocab-card').classList.toggle('is-flipped');
+                }
+            });
+
+            // Vocabulary Section Logic
+            const fullVocabListContainer = document.getElementById('full-vocab-list');
+            const vocabSearch = document.getElementById('vocabSearch');
+            const vocabFilter = document.getElementById('vocabFilter');
+            
+            function populateFullVocabList() {
+                let allVocab = [];
+                for (const category in vocabulary) {
+                    vocabulary[category].forEach(voc => {
+                        allVocab.push({ ...voc, category });
+                    });
+                }
+                renderVocab(allVocab);
+
+                const categories = Object.keys(vocabulary);
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    vocabFilter.appendChild(option);
+                });
+            }
+
+            function renderVocab(vocabArray) {
+                fullVocabListContainer.innerHTML = vocabArray.map(voc => `
+                    <div class="vocab-card">
+                        <div class="vocab-card-inner">
+                            <div class="vocab-card-front">
+                                <div>
+                                    <p class="font-semibold">${voc.fr}</p>
+                                    <p class="text-xs text-stone-500">${voc.category}</p>
+                                </div>
+                            </div>
+                            <div class="vocab-card-back">${voc.de}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            function filterAndSearchVocab() {
+                const searchTerm = vocabSearch.value.toLowerCase();
+                const selectedCategory = vocabFilter.value;
+
+                let filteredVocab = [];
+                 for (const category in vocabulary) {
+                    vocabulary[category].forEach(voc => {
+                        filteredVocab.push({ ...voc, category });
+                    });
+                }
+
+                if (selectedCategory !== 'all') {
+                    filteredVocab = filteredVocab.filter(voc => voc.category === selectedCategory);
+                }
+
+                if (searchTerm) {
+                    filteredVocab = filteredVocab.filter(voc => 
+                        voc.fr.toLowerCase().includes(searchTerm) || 
+                        voc.de.toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                renderVocab(filteredVocab);
+            }
+
+            vocabSearch.addEventListener('keyup', filterAndSearchVocab);
+            vocabFilter.addEventListener('change', filterAndSearchVocab);
+
+            populateFullVocabList();
+            
+            // Chart.js implementation
+            const ctx = document.getElementById('planChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['W1: Grundlagen', 'W2: Alltag', 'W3: Bewegung', 'W4: Festigung'],
+                    datasets: [{
+                        label: 'Lernfokus',
+                        data: [25, 25, 25, 25],
+                        backgroundColor: [
+                            '#5eead4', // teal-300
+                            '#2dd4bf', // teal-400
+                            '#0d9488', // teal-600
+                            '#115e59'  // teal-800
+                        ],
+                        borderColor: '#f5f5f4',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: 'Inter',
+                                },
+                                boxWidth: 12,
+                                padding: 15,
+                            }
+                        },
+                        tooltip: {
+                             bodyFont: {
+                                family: 'Inter',
+                            },
+                             titleFont: {
+                                family: 'Inter',
+                            },
+                        }
+                    }
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>
