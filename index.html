@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interaktiver Lernplan: Französisch A1</title>
+    <title>Interaktiver Lernplan: Französisch A1 Express</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Calm Focus Palette (Stone, Teal, White) -->
-    <!-- Application Structure Plan: A 4-week, tab-based interactive learning plan. The user navigates between weeks, each containing daily, collapsible tasks (vocabulary, grammar, exercises). This structure breaks down the content into manageable chunks, ideal for a beginner, preventing overwhelm. A central, filterable vocabulary list serves as a constant reference tool. The dashboard provides a high-level overview with a progress chart to motivate the user. This is more engaging than a linear document. -->
-    <!-- Visualization & Content Choices: Report Info: PDF Grammar Units -> Goal: Structure the learning journey -> Viz/Presentation: Donut Chart (Chart.js) showing topic distribution over 4 weeks. Interaction: None, it's a static overview. Justification: Provides a quick, visual summary of the learning path. Report Info: Vocabulary List -> Goal: Active recall practice -> Viz/Presentation: HTML/CSS flashcards. Interaction: Click to flip. Justification: More effective for memorization than a static list. Report Info: Weekly tasks -> Goal: Guided learning -> Viz/Presentation: Collapsible accordion sections. Interaction: Click to expand/collapse. Justification: Keeps the UI clean and focused on the current day's tasks. -->
+    <!-- Application Structure Plan: A 7-day, tab-based interactive learning plan. The user navigates between days, each containing a focused, collapsible task. This structure breaks down the content into highly manageable, daily chunks, crucial for a compressed timeline. A central, filterable vocabulary list serves as a constant reference tool. A progress bar and dashboard provide a high-level overview to maintain motivation. This is more engaging and goal-oriented than a static document. -->
+    <!-- Visualization & Content Choices: Report Info: PDF Grammar Units -> Goal: Structure the learning journey -> Viz/Presentation: Doughnut Chart (Chart.js) showing topic distribution over 7 days. Interaction: None, it's a static overview. Justification: Provides a quick, visual summary of the intense learning path. Report Info: Vocabulary List -> Goal: Active recall practice -> Viz/Presentation: HTML/CSS flashcards. Interaction: Click to flip. Justification: More effective for memorization under time pressure than a static list. Report Info: Daily tasks -> Goal: Guided learning -> Viz/Presentation: Collapsible accordion sections. Interaction: Click to expand/collapse. Justification: Keeps the UI clean and focused on the current day's tasks, preventing overwhelm. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
@@ -92,7 +92,7 @@
     <div class="main-container p-4 md:p-8">
         <header class="text-center mb-8">
             <h1 class="text-4xl md:text-5xl font-bold text-teal-700">Interaktiver Lernplan</h1>
-            <p class="text-lg text-stone-600 mt-2">Dein 4-Wochen-Weg zum Französisch-Grundwissen (A1)</p>
+            <p class="text-lg text-stone-600 mt-2">Dein 7-Tage-Express-Plan (24. Sep. - 1. Okt.)</p>
         </header>
 
         <main>
@@ -102,12 +102,12 @@
                 <div class="flex flex-col md:flex-row items-center gap-8">
                     <div class="w-full md:w-2/3">
                         <p class="text-stone-700 mb-4">
-                            Willkommen zu deinem persönlichen Französisch-Lernplan! Dieser Plan ist speziell für Anfänger ohne Vorkenntnisse konzipiert. Er führt dich in vier Wochen durch die wichtigsten Grundlagen der Grammatik aus deinem Lehrmittel (Unité 1-5) und den dazugehörigen Wortschatz. Wähle unten eine Woche aus, um mit deinen täglichen Aufgaben zu beginnen. Viel Erfolg!
+                            Dieser Plan ist straff und kompakt, um dich in nur einer Woche auf den 1. Oktober vorzubereiten. Jeder Tag hat einen klaren Fokus, um dich nicht zu überfordern. Konzentriere dich auf die Aufgaben des Tages und nutze die Vokabelkarten zur schnellen Wiederholung.
                         </p>
                         <div class="w-full bg-stone-200 rounded-full h-4 mb-4">
                             <div id="progressBar" class="bg-teal-500 h-4 rounded-full" style="width: 0%;"></div>
                         </div>
-                        <p id="progressText" class="text-center font-semibold text-teal-700">Wähle eine Woche, um zu starten!</p>
+                        <p id="progressText" class="text-center font-semibold text-teal-700">Wähle einen Tag, um zu starten!</p>
                     </div>
                     <div class="w-full md:w-1/3">
                          <div class="chart-container">
@@ -118,21 +118,24 @@
             </section>
 
             <!-- Navigation Tabs -->
-            <nav id="week-navigation" class="flex flex-wrap justify-center gap-2 mb-8">
-                <button data-week="1" class="tab-btn week-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Woche 1</button>
-                <button data-week="2" class="tab-btn week-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Woche 2</button>
-                <button data-week="3" class="tab-btn week-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Woche 3</button>
-                <button data-week="4" class="tab-btn week-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Woche 4</button>
-                <button data-week="5" class="tab-btn week-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Wortschatz</button>
+            <nav id="day-navigation" class="flex flex-wrap justify-center gap-2 mb-8">
+                <button data-day="1" class="tab-btn day-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Tag 1</button>
+                <button data-day="2" class="tab-btn day-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Tag 2</button>
+                <button data-day="3" class="tab-btn day-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Tag 3</button>
+                <button data-day="4" class="tab-btn day-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Tag 4</button>
+                <button data-day="5" class="tab-btn day-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Tag 5</button>
+                <button data-day="6" class="tab-btn day-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Tag 6</button>
+                <button data-day="7" class="tab-btn day-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Tag 7</button>
+                <button data-day="8" class="tab-btn day-btn py-2 px-6 bg-white rounded-full font-semibold shadow-sm border border-stone-200">Wortschatz</button>
             </nav>
 
             <!-- Content Sections -->
             <div id="content-container">
-                <!-- Weeks Content will be injected here by JS -->
+                <!-- Days Content will be injected here by JS -->
             </div>
 
             <!-- Vocabulary Section -->
-            <section id="week-5" class="week-content hidden">
+            <section id="day-8" class="day-content hidden">
                  <div class="task-card">
                     <h2 class="text-2xl font-bold mb-4">Gesamter Wortschatz</h2>
                     <p class="mb-4">Hier findest du alle Vokabeln. Du kannst sie nach Kategorie filtern oder direkt nach einem Wort suchen.</p>
@@ -153,7 +156,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            
+
             const vocabulary = {
                 "Wichtige Lernbegriffe": [
                     { fr: "le verbe", de: "das Verb" },
@@ -239,45 +242,67 @@
 
             const learningPlan = {
                 1: {
-                    title: "Woche 1: Die Grundlagen",
-                    description: "In dieser Woche lernst du die absolut wichtigsten Verben 'sein' und 'haben' sowie grundlegende Satzstrukturen. Das ist die Basis für alles Weitere!",
+                    title: "Tag 1: Verben sein & haben",
+                    description: "Fokus: être (sein) und avoir (haben) im Präsens. Lerne die Konjugationen auswendig. Dies sind die wichtigsten Verben überhaupt!",
                     tasks: [
-                        { day: "Tag 1-2: Vokabeln & Grammatik 1", content: `<h3>Grammatik: Unité 1 (Seite 6-8)</h3><p>Fokus: Die Verben <strong>être</strong> (sein) und <strong>avoir</strong> (haben) im Präsens. Diese Verben sind unregelmässig, aber extrem wichtig. Lerne ihre Formen auswendig.</p><p><strong>être:</strong> je suis, tu es, il/elle/on est, nous sommes, vous êtes, ils/elles sont.</p><p><strong>avoir:</strong> j'ai, tu as, il/elle/on a, nous avons, vous avez, ils/elles ont.</p><p>Bearbeite die Übungen auf Seite 8.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorien "Wichtige Lernbegriffe" und "La vie et les relations".</p>`, vocabCategories: ["Wichtige Lernbegriffe", "La vie et les relations"]},
-                        { day: "Tag 3-4: Grammatik 2", content: `<h3>Grammatik: Unité 2 (Seite 9-11)</h3><p>Fokus: Die Ausdrücke <strong>Il y a</strong> (Es gibt) und <strong>C'est / Ce sont</strong> (Das ist / Das sind). Merke dir: 'Il y a' ist unveränderlich. 'C'est' benutzt du für die Einzahl, 'Ce sont' für die Mehrzahl.</p><p>Bearbeite die Übungen auf Seite 11.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Berufsleben und Karriere".</p>`, vocabCategories: ["Berufsleben und Karriere"]},
-                        { day: "Tag 5-7: Wiederholung & Übung", content: `<h3>Wiederholung</h3><p>Wiederhole die Konjugationen von 'être' und 'avoir'. Lies die Dialoge auf Seite 6 und 9 nochmals laut vor. Wiederhole alle Vokabeln dieser Woche.</p><h3>Zusatzübung</h3><p>Bilde einfache Sätze. Beispiel: "Je suis un étudiant." (Ich bin ein Student.), "Il y a un livre sur la table." (Es gibt ein Buch auf dem Tisch.), "C'est une actrice." (Das ist eine Schauspielerin.)</p>`}
+                        { content: `<h3>Grammatik: Unité 1 (Seite 6-8)</h3><p>Bearbeite die Übungen auf Seite 8.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorien "Wichtige Lernbegriffe" und "La vie et les relations".</p>`, vocabCategories: ["Wichtige Lernbegriffe", "La vie et les relations"]},
+                        { content: `<h3>Aufgabe:</h3><p>Bilde mindestens 5 Sätze mit <strong>être</strong> und 5 Sätze mit <strong>avoir</strong>. Beispiel: "Je suis fatigué." (Ich bin müde), "Tu as un stylo." (Du hast einen Stift).` }
                     ]
                 },
                 2: {
-                    title: "Woche 2: Regelmässige Verben & Alltag",
-                    description: "Jetzt wird es systematisch! Du lernst die grösste Gruppe von Verben im Französischen kennen und wie man einfache Fragen stellt. Ausserdem lernst du zwei wichtige Alltagsverben.",
+                    title: "Tag 2: Es gibt & Das ist",
+                    description: "Fokus: Il y a (Es gibt) und C'est / Ce sont (Das ist / Das sind). Merke dir den Unterschied zwischen Ein- und Mehrzahl.",
                     tasks: [
-                        { day: "Tag 1-2: Grammatik 3", content: `<h3>Grammatik: Unité 3 (Seite 12-14)</h3><p>Fokus: Verben auf <strong>-er</strong> im Präsens (1. Gruppe). Das ist die grösste Gruppe! Die Endungen sind immer gleich: -e, -es, -e, -ons, -ez, -ent. Beispiel mit 'parler' (sprechen): je parle, tu parles, il parle, nous parlons, vous parlez, ils parlent.</p><p>Lerne auch die Fragestellungen (z.B. "Est-ce que..."). Bearbeite die Übungen auf Seite 14.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Freizeit, Hobbys und Kultur".</p>`, vocabCategories: ["Freizeit, Hobbys und Kultur"]},
-                        { day: "Tag 3-4: Grammatik 4", content: `<h3>Grammatik: Unité 4 (Seite 15-17)</h3><p>Fokus: Die Verben <strong>faire</strong> (machen/tun) und <strong>prendre</strong> (nehmen). Beide sind sehr häufig und unregelmässig.</p><p><strong>faire:</strong> je fais, tu fais, il fait, nous faisons, vous faites, ils font.</p><p><strong>prendre:</strong> je prends, tu prends, il prend, nous prenons, vous prenez, ils prennent.</p><p>Bearbeite die Übungen auf Seite 17.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Sport".</p>`, vocabCategories: ["Sport"]},
-                        { day: "Tag 5-7: Wiederholung & Übung", content: `<h3>Wiederholung</h3><p>Konjugiere die Verben 'travailler' (arbeiten) und 's'intéresser' (sich interessieren) im Präsens. Wiederhole die Formen von 'faire' und 'prendre'. Wiederhole alle Vokabeln dieser Woche.</p><h3>Zusatzübung</h3><p>Schreibe Sätze über deine Hobbys. Beispiel: "Je fais du sport." (Ich mache Sport.), "Nous faisons de la musique." (Wir machen Musik.), "Vous prenez le bus." (Ihr nehmt den Bus.)</p>`}
+                        { content: `<h3>Grammatik: Unité 2 (Seite 9-11)</h3><p>Bearbeite die Übungen auf Seite 11.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Berufsleben und Karriere".</p>`, vocabCategories: ["Berufsleben und Karriere"]},
+                        { content: `<h3>Aufgabe:</h3><p>Beschreibe, was du in einem Raum siehst. Nutze <strong>Il y a</strong>, <strong>C'est</strong> und <strong>Ce sont</strong>. Beispiel: "Il y a une table. C'est une table. Ce sont des chaises." (Es gibt einen Tisch. Das ist ein Tisch. Das sind Stühle).` }
                     ]
                 },
                 3: {
-                    title: "Woche 3: Bewegung & Pläne",
-                    description: "In dieser Woche dreht sich alles um Bewegung. Du lernst, wie du sagst, wohin du gehst, woher du kommst und wann du aufbrichst.",
+                    title: "Tag 3: Verben auf -er & Freizeit",
+                    description: "Fokus: Regelmässige Verben auf -er. Die Endungen sind immer gleich. Übe dies, bis es sitzt!",
                     tasks: [
-                        { day: "Tag 1-3: Grammatik 5", content: `<h3>Grammatik: Unité 5 (Seite 18-20)</h3><p>Fokus: Die Verben <strong>aller</strong> (gehen), <strong>venir</strong> (kommen) und <strong>partir</strong> (weggehen/abfahren). Alle drei sind unregelmässig und sehr wichtig für Alltagsgespräche.</p><p><strong>aller:</strong> je vais, tu vas, il va, nous allons, vous allez, ils vont.</p><p><strong>venir:</strong> je viens, tu viens, il vient, nous venons, vous venez, ils viennent.</p><p><strong>partir:</strong> je pars, tu pars, il part, nous partons, vous partez, ils partent.</p><p>Bearbeite die Übungen auf Seite 20.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Wettbewerb und Spiele".</p>`, vocabCategories: ["Wettbewerb und Spiele"]},
-                        { day: "Tag 4-5: Wortschatz erweitern", content: `<h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Erfolg und Misserfolg".</p><h3>Wiederholung</h3><p>Wiederhole die Konjugationen von 'aller', 'venir' und 'partir' intensiv.</p>`, vocabCategories: ["Erfolg und Misserfolg"]},
-                        { day: "Tag 6-7: Anwendung & Kreativität", content: `<h3>Anwendung</h3><p>Lies die Dialoge von Unité 5 (Seite 18) noch einmal laut. Versuche, die Rollen zu wechseln.</p><h3>Zusatzübung</h3><p>Beschreibe einen typischen Tag von dir mit den neuen Verben. Beispiel: "Le matin, je vais au travail. Le soir, je viens de la bibliothèque. Je pars en vacances en juillet." (Morgens gehe ich zur Arbeit. Abends komme ich aus der Bibliothek. Ich fahre im Juli in den Urlaub.)</p>`}
+                        { content: `<h3>Grammatik: Unité 3 (Seite 12-14)</h3><p>Bearbeite die Übungen auf Seite 14.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Freizeit, Hobbys und Kultur".</p>`, vocabCategories: ["Freizeit, Hobbys und Kultur"]},
+                        { content: `<h3>Aufgabe:</h3><p>Konjugiere die Verben 'travailler' (arbeiten) und 'aimer' (mögen/lieben) im Präsens. Schreib es auf oder sag es laut auf.` }
                     ]
                 },
                 4: {
-                    title: "Woche 4: Festigung & Bilan",
-                    description: "Die letzte Woche! Jetzt bringen wir alles zusammen. Du wiederholst die Grammatik der ersten fünf Lektionen und testest dein Wissen mit den Bilan-Übungen.",
+                    title: "Tag 4: Machen & Nehmen",
+                    description: "Fokus: faire (machen/tun) und prendre (nehmen). Diese sind unregelmässig, aber sehr häufig. Lerne die Formen auswendig.",
                     tasks: [
-                        { day: "Tag 1-3: Bilan 1", content: `<h3>Grammatik: Bilan N° 1 (Seite 21-23)</h3><p>Fokus: Wiederholung aller bisherigen Grammatikthemen. Bearbeite die Übungen auf den Seiten 21 bis 23. Schlage bei Unsicherheiten in den jeweiligen Kapiteln nach. Das ist der wichtigste Test für dich selbst!</p>`},
-                        { day: "Tag 4-5: Wortschatz-Marathon", content: `<h3>Wortschatz-Wiederholung</h3><p>Wiederhole ALLE Vokabeln aus den letzten drei Wochen. Nutze die interaktiven Karteikarten und die Filterfunktion im Wortschatz-Bereich.</p>`},
-                        { day: "Tag 6-7: Finale Wiederholung & Ausblick", content: `<h3>Abschluss</h3><p>Gratuliere! Du hast die Grundlagen geschafft. Lies noch einmal alle Dialoge von Unité 1 bis 5. Du wirst merken, dass du jetzt viel mehr verstehst. Was möchtest du als Nächstes lernen?</p>`}
+                        { content: `<h3>Grammatik: Unité 4 (Seite 15-17)</h3><p>Bearbeite die Übungen auf Seite 17.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorie "Sport".</p>`, vocabCategories: ["Sport"]},
+                        { content: `<h3>Aufgabe:</h3><p>Bilde Sätze über deine Hobbys oder tägliche Routine mit <strong>faire</strong> und <strong>prendre</strong>. Beispiel: "Je fais du sport." (Ich mache Sport.), "Je prends le bus." (Ich nehme den Bus).` }
                     ]
+                },
+                5: {
+                    title: "Tag 5: Bewegung & Pläne",
+                    description: "Fokus: aller (gehen), venir (kommen) und partir (weggehen/abfahren). Mit diesen Verben kannst du über deine Wege und Reisen sprechen.",
+                    tasks: [
+                        { content: `<h3>Grammatik: Unité 5 (Seite 18-20)</h3><p>Bearbeite die Übungen auf Seite 20.</p><h3>Wortschatz</h3><p>Lerne die Vokabeln der Kategorien "Wettbewerb und Spiele" und "Erfolg und Misserfolg".</p>`, vocabCategories: ["Wettbewerb und Spiele", "Erfolg und Misserfolg"]},
+                        { content: `<h3>Aufgabe:</h3><p>Bilde mindestens 3 Sätze mit jedem Verb. Beispiel: "Je vais au cinéma." (Ich gehe ins Kino.), "Tu viens à la fête?" (Kommst du zur Party?), "Nous partons en vacances." (Wir fahren in den Urlaub).` }
+                    ]
+                },
+                6: {
+                    title: "Tag 6: Wiederholung & Bilan",
+                    description: "Heute wird alles wiederholt. Bearbeite die Bilan-Übungen, um dein Wissen zu überprüfen.",
+                    tasks: [
+                        { content: `<h3>Grammatik: Bilan N° 1 (Seite 21-23)</h3><p>Bearbeite die Übungen auf den Seiten 21 bis 23. Schlage bei Unsicherheiten in den jeweiligen Kapiteln nach.</p><h3>Wortschatz</h3><p>Wiederhole ALLE Vokabeln, die du bisher gelernt hast. Nutze die interaktiven Karteikarten im Wortschatz-Bereich.</p>` }
+                    ]
+                },
+                7: {
+                    title: "Tag 7: Letzte Prüfung & Feiern",
+                    description: "Es ist der 1. Oktober! Teste dich ein letztes Mal selbst und belohne dich danach!",
+                    tasks: [
+                        { content: `<h3>Finale Wiederholung</h3><p>Gehe noch einmal die Bilan-Übungen durch. Lies die Dialoge von Unité 1 bis 5 und versuche, so viel wie möglich zu verstehen. Schaffe es, ohne die deutsche Übersetzung zu denken.</p><h3>Aufgabe:</h3><p>Fasse in 3-5 französischen Sätzen zusammen, was du in den letzten 7 Tagen gelernt hast. Beispiel: "J'ai appris les verbes être et avoir. J'ai aussi appris à parler de mes loisirs."</p><h3>Erfolg feiern:</h3><p>Du hast es geschafft! Geniesse eine Pause und feiere deinen Erfolg.</p>` }
+                    ]
+                },
+                8: {
+                    title: "Gesamter Wortschatz",
+                    description: "Hier findest du alle Vokabeln. Du kannst sie nach Kategorie filtern oder direkt nach einem Wort suchen."
                 }
             };
             
             const contentContainer = document.getElementById('content-container');
-            const weekButtons = document.querySelectorAll('.week-btn');
+            const dayButtons = document.querySelectorAll('.day-btn');
             const progressBar = document.getElementById('progressBar');
             const progressText = document.getElementById('progressText');
 
@@ -289,7 +314,12 @@
                             html += `
                                 <div class="vocab-card">
                                     <div class="vocab-card-inner">
-                                        <div class="vocab-card-front">${voc.fr}</div>
+                                        <div class="vocab-card-front">
+                                            <div>
+                                                <p class="font-semibold">${voc.fr}</p>
+                                                <p class="text-xs text-stone-500">${cat}</p>
+                                            </div>
+                                        </div>
                                         <div class="vocab-card-back">${voc.de}</div>
                                     </div>
                                 </div>`;
@@ -302,72 +332,73 @@
             
             function createAccordion(tasks) {
                 let html = '';
-                tasks.forEach((task, index) => {
+                tasks.forEach(task => {
+                    const hasVocab = task.vocabCategories && task.vocabCategories.length > 0;
                     html += `
                     <div class="task-card">
                         <button class="accordion-header w-full text-left">
                             <h3 class="text-xl font-semibold text-teal-700 flex justify-between items-center">
-                                ${task.day}
+                                Aufgabe
                                 <span class="transform transition-transform duration-300 ">▼</span>
                             </h3>
                         </button>
                         <div class="accordion-content mt-4 text-stone-700">
                             ${task.content}
-                            ${task.vocabCategories ? createVocabCards(task.vocabCategories) : ''}
+                            ${hasVocab ? createVocabCards(task.vocabCategories) : ''}
                         </div>
                     </div>`;
                 });
                 return html;
             }
 
-            function generateWeekContent() {
-                for (const weekNum in learningPlan) {
-                    const weekData = learningPlan[weekNum];
+            function generateDayContent() {
+                for (let i = 1; i <= 7; i++) {
+                    const dayData = learningPlan[i];
                     const section = document.createElement('section');
-                    section.id = `week-${weekNum}`;
-                    section.className = 'week-content hidden';
+                    section.id = `day-${i}`;
+                    section.className = 'day-content hidden';
                     section.innerHTML = `
                         <div class="text-center mb-6 p-6 bg-white rounded-lg shadow-md">
-                            <h2 class="text-3xl font-bold">${weekData.title}</h2>
-                            <p class="mt-2 text-stone-600">${weekData.description}</p>
+                            <h2 class="text-3xl font-bold">${dayData.title}</h2>
+                            <p class="mt-2 text-stone-600">${dayData.description}</p>
                         </div>
                         <div>
-                            ${createAccordion(weekData.tasks)}
+                            ${createAccordion(dayData.tasks)}
                         </div>
                     `;
                     contentContainer.appendChild(section);
                 }
             }
             
-            function showWeek(weekNumber) {
-                document.querySelectorAll('.week-content').forEach(el => el.classList.add('hidden'));
-                const activeWeek = document.getElementById(`week-${weekNumber}`);
-                if (activeWeek) {
-                    activeWeek.classList.remove('hidden');
+            function showDay(dayNumber) {
+                document.querySelectorAll('.day-content').forEach(el => el.classList.add('hidden'));
+                const activeDay = document.getElementById(`day-${dayNumber}`);
+                if (activeDay) {
+                    activeDay.classList.remove('hidden');
                 }
 
-                weekButtons.forEach(btn => btn.classList.remove('active'));
-                const activeButton = document.querySelector(`.week-btn[data-week="${weekNumber}"]`);
+                dayButtons.forEach(btn => btn.classList.remove('active'));
+                const activeButton = document.querySelector(`.day-btn[data-day="${dayNumber}"]`);
                 if(activeButton) {
                     activeButton.classList.add('active');
                 }
 
-                const progress = weekNumber <= 4 ? (weekNumber / 4) * 100 : 100;
+                const progress = dayNumber <= 7 ? ((dayNumber / 7) * 100).toFixed(0) : 100;
                 progressBar.style.width = `${progress}%`;
                 
-                if (weekNumber <= 4) {
-                    progressText.textContent = `Du bearbeitest gerade Woche ${weekNumber} von 4.`;
-                } else if (weekNumber == 5) {
+                if (dayNumber <= 7) {
+                    progressText.textContent = `Du bearbeitest gerade Tag ${dayNumber} von 7.`;
+                } else if (dayNumber == 8) {
                      progressText.textContent = `Wortschatz-Modus. Dein Lernplan ist zu 100% abgeschlossen!`;
                 }
             }
 
-            generateWeekContent();
+            generateDayContent();
 
-            weekButtons.forEach(button => {
+            dayButtons.forEach(button => {
                 button.addEventListener('click', () => {
-                    const weekNum = button.dataset.week;
-                    showWeek(weekNum);
+                    const dayNum = button.dataset.day;
+                    showDay(dayNum);
                 });
             });
 
@@ -466,15 +497,16 @@
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['W1: Grundlagen', 'W2: Alltag', 'W3: Bewegung', 'W4: Festigung'],
+                    labels: ['Tag 1-2: être & avoir', 'Tag 3: -er Verben', 'Tag 4: faire & prendre', 'Tag 5: aller & venir & partir', 'Tag 6-7: Wiederholung & Bilan'],
                     datasets: [{
                         label: 'Lernfokus',
-                        data: [25, 25, 25, 25],
+                        data: [25, 15, 15, 15, 30],
                         backgroundColor: [
                             '#5eead4', // teal-300
                             '#2dd4bf', // teal-400
                             '#0d9488', // teal-600
-                            '#115e59'  // teal-800
+                            '#115e59',  // teal-800
+                            '#064e3b'  // teal-900
                         ],
                         borderColor: '#f5f5f4',
                         borderWidth: 2
@@ -505,7 +537,6 @@
                     }
                 }
             });
-
         });
     </script>
 </body>
