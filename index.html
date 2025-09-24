@@ -7,14 +7,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Calm Focus Palette (Stone, Teal, White) -->
-    <!-- Application Structure Plan: A 7-day, tab-based interactive learning plan. The user navigates between days, each containing a focused, collapsible task. This structure breaks down the content into highly manageable, daily chunks, crucial for a compressed timeline. A central, filterable vocabulary list serves as a constant reference tool. A progress bar and dashboard provide a high-level overview to maintain motivation. This is more engaging and goal-oriented than a static document. -->
+    <!-- Chosen Palette: Calm Focus Palette (Stone, Teal, White) + Dark Mode Inversion (Stone-900, Teal, White) -->
+    <!-- Application Structure Plan: A 7-day, tab-based interactive learning plan with a dark mode toggle. The user navigates between days, each containing a focused, collapsible task. This structure breaks down the content into highly manageable, daily chunks, crucial for a compressed timeline. A central, filterable vocabulary list serves as a constant reference tool. A progress bar and dashboard provide a high-level overview to maintain motivation. The dark mode adds a user preference feature, enhancing usability. -->
     <!-- Visualization & Content Choices: Report Info: PDF Grammar Units -> Goal: Structure the learning journey -> Viz/Presentation: Doughnut Chart (Chart.js) showing topic distribution over 7 days. Interaction: None, it's a static overview. Justification: Provides a quick, visual summary of the intense learning path. Report Info: Vocabulary List -> Goal: Active recall practice -> Viz/Presentation: HTML/CSS flashcards. Interaction: Click to flip. Justification: More effective for memorization under time pressure than a static list. Report Info: Daily tasks -> Goal: Guided learning -> Viz/Presentation: Collapsible accordion sections. Interaction: Click to expand/collapse. Justification: Keeps the UI clean and focused on the current day's tasks, preventing overwhelm. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f5f5f4; /* stone-100 */
+            background-color: #f5f5f4;
+            color: #44403c;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark {
+            background-color: #1c1917;
+            color: #d6d3d1;
         }
         .main-container {
             max-width: 1200px;
@@ -24,7 +30,7 @@
             transition: all 0.3s ease;
         }
         .tab-btn.active {
-            background-color: #0d9488; /* teal-600 */
+            background-color: #0d9488;
             color: white;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
@@ -34,6 +40,11 @@
             padding: 1.5rem;
             box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
             margin-bottom: 1rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .task-card.dark {
+            background-color: #292524;
+            color: #d6d3d1;
         }
         .vocab-card {
             perspective: 1000px;
@@ -62,15 +73,26 @@
             justify-content: center;
             padding: 1rem;
             border-radius: 0.5rem;
-            border: 1px solid #e7e5e4; /* stone-200 */
+            border: 1px solid #e7e5e4;
+        }
+        .vocab-card-front.dark {
+             border: 1px solid #44403c;
         }
         .vocab-card-front {
             background-color: #fcfcfc;
         }
+        .vocab-card-front.dark {
+            background-color: #44403c;
+            color: #d6d3d1;
+        }
         .vocab-card-back {
-            background-color: #f0fdfa; /* teal-50 */
-            color: #134e4a; /* teal-900 */
+            background-color: #f0fdfa;
+            color: #134e4a;
             transform: rotateY(180deg);
+        }
+        .vocab-card-back.dark {
+            background-color: #115e59;
+            color: #f0fdfa;
         }
         .accordion-content {
             display: none;
@@ -85,9 +107,26 @@
             margin-left: auto;
             margin-right: auto;
         }
+        #darkModeToggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background-color: #f5f5f4;
+            border: 1px solid #d6d3d1;
+            border-radius: 9999px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        #darkModeToggle.dark {
+            background-color: #292524;
+            border-color: #44403c;
+        }
     </style>
 </head>
 <body class="text-stone-800">
+
+    <button id="darkModeToggle">☀️</button>
 
     <div class="main-container p-4 md:p-8">
         <header class="text-center mb-8">
@@ -300,11 +339,12 @@
                     description: "Hier findest du alle Vokabeln. Du kannst sie nach Kategorie filtern oder direkt nach einem Wort suchen."
                 }
             };
-            
+
             const contentContainer = document.getElementById('content-container');
             const dayButtons = document.querySelectorAll('.day-btn');
             const progressBar = document.getElementById('progressBar');
             const progressText = document.getElementById('progressText');
+            const darkModeToggle = document.getElementById('darkModeToggle');
 
             function createVocabCards(categories) {
                 let html = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">';
@@ -329,22 +369,26 @@
                 html += '</div>';
                 return html;
             }
-            
+
             function createAccordion(tasks) {
                 let html = '';
-                tasks.forEach(task => {
-                    const hasVocab = task.vocabCategories && task.vocabCategories.length > 0;
+                tasks.forEach((task, index) => {
+                    const isGrammarTask = index === 0;
+                    const accordionTitle = isGrammarTask ? 'Grammatik & Vokabeln' : 'Aufgabe des Tages';
+                    const vocabContent = task.vocabCategories ? createVocabCards(task.vocabCategories) : '';
+                    const taskContent = task.content;
+
                     html += `
                     <div class="task-card">
                         <button class="accordion-header w-full text-left">
                             <h3 class="text-xl font-semibold text-teal-700 flex justify-between items-center">
-                                Aufgabe
+                                ${accordionTitle}
                                 <span class="transform transition-transform duration-300 ">▼</span>
                             </h3>
                         </button>
                         <div class="accordion-content mt-4 text-stone-700">
-                            ${task.content}
-                            ${hasVocab ? createVocabCards(task.vocabCategories) : ''}
+                            ${taskContent}
+                            ${vocabContent}
                         </div>
                     </div>`;
                 });
@@ -369,7 +413,7 @@
                     contentContainer.appendChild(section);
                 }
             }
-            
+
             function showDay(dayNumber) {
                 document.querySelectorAll('.day-content').forEach(el => el.classList.add('hidden'));
                 const activeDay = document.getElementById(`day-${dayNumber}`);
@@ -385,7 +429,7 @@
 
                 const progress = dayNumber <= 7 ? ((dayNumber / 7) * 100).toFixed(0) : 100;
                 progressBar.style.width = `${progress}%`;
-                
+
                 if (dayNumber <= 7) {
                     progressText.textContent = `Du bearbeitest gerade Tag ${dayNumber} von 7.`;
                 } else if (dayNumber == 8) {
@@ -406,7 +450,7 @@
                 header.addEventListener('click', () => {
                     const content = header.nextElementSibling;
                     const icon = header.querySelector('span');
-                    
+
                     if (content.style.display === "block") {
                         content.style.display = "none";
                         icon.style.transform = "rotate(0deg)";
@@ -416,7 +460,7 @@
                     }
                 });
             });
-            
+
             document.body.addEventListener('click', function(e) {
                 if (e.target.closest('.vocab-card')) {
                     e.target.closest('.vocab-card').classList.toggle('is-flipped');
@@ -427,7 +471,7 @@
             const fullVocabListContainer = document.getElementById('full-vocab-list');
             const vocabSearch = document.getElementById('vocabSearch');
             const vocabFilter = document.getElementById('vocabFilter');
-            
+
             function populateFullVocabList() {
                 let allVocab = [];
                 for (const category in vocabulary) {
@@ -461,7 +505,7 @@
                     </div>
                 `).join('');
             }
-            
+
             function filterAndSearchVocab() {
                 const searchTerm = vocabSearch.value.toLowerCase();
                 const selectedCategory = vocabFilter.value;
@@ -478,12 +522,12 @@
                 }
 
                 if (searchTerm) {
-                    filteredVocab = filteredVocab.filter(voc => 
-                        voc.fr.toLowerCase().includes(searchTerm) || 
+                    filteredVocab = filteredVocab.filter(voc =>
+                        voc.fr.toLowerCase().includes(searchTerm) ||
                         voc.de.toLowerCase().includes(searchTerm)
                     );
                 }
-                
+
                 renderVocab(filteredVocab);
             }
 
@@ -491,10 +535,10 @@
             vocabFilter.addEventListener('change', filterAndSearchVocab);
 
             populateFullVocabList();
-            
+
             // Chart.js implementation
             const ctx = document.getElementById('planChart').getContext('2d');
-            new Chart(ctx, {
+            const planChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Tag 1-2: être & avoir', 'Tag 3: -er Verben', 'Tag 4: faire & prendre', 'Tag 5: aller & venir & partir', 'Tag 6-7: Wiederholung & Bilan'],
@@ -502,11 +546,11 @@
                         label: 'Lernfokus',
                         data: [25, 15, 15, 15, 30],
                         backgroundColor: [
-                            '#5eead4', // teal-300
-                            '#2dd4bf', // teal-400
-                            '#0d9488', // teal-600
-                            '#115e59',  // teal-800
-                            '#064e3b'  // teal-900
+                            '#5eead4',
+                            '#2dd4bf',
+                            '#0d9488',
+                            '#115e59',
+                            '#064e3b'
                         ],
                         borderColor: '#f5f5f4',
                         borderWidth: 2
@@ -519,6 +563,7 @@
                         legend: {
                             position: 'bottom',
                             labels: {
+                                color: '#44403c',
                                 font: {
                                     family: 'Inter',
                                 },
@@ -536,6 +581,48 @@
                         }
                     }
                 }
+            });
+
+            // Dark Mode Logic
+            darkModeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                const isDarkMode = document.body.classList.contains('dark');
+
+                // Update text colors
+                const textColor = isDarkMode ? '#d6d3d1' : '#44403c';
+                document.querySelector('header p').style.color = isDarkMode ? '#a8a29e' : '#57534e';
+                document.querySelector('#progressText').style.color = isDarkMode ? '#14b8a6' : '#0d9488';
+                
+                // Update component backgrounds and text
+                document.querySelectorAll('.task-card, .vocab-card-front, .vocab-card-back, .tab-btn').forEach(el => el.classList.toggle('dark', isDarkMode));
+
+                // Update chart colors
+                planChart.options.plugins.legend.labels.color = textColor;
+                planChart.data.datasets[0].borderColor = isDarkMode ? '#1c1917' : '#f5f5f4';
+                planChart.update();
+
+                darkModeToggle.textContent = isDarkMode ? '☀️' : '🌙';
+
+                 document.querySelectorAll('.vocab-card-front').forEach(card => {
+                    const isDark = document.body.classList.contains('dark');
+                    card.style.borderColor = isDark ? '#44403c' : '#e7e5e4';
+                 });
+                 
+                 document.querySelectorAll('#vocabSearch, #vocabFilter').forEach(el => {
+                     if (isDarkMode) {
+                         el.style.backgroundColor = '#292524';
+                         el.style.color = '#d6d3d1';
+                         el.style.borderColor = '#44403c';
+                     } else {
+                         el.style.backgroundColor = 'white';
+                         el.style.color = '#44403c';
+                         el.style.borderColor = '#d6d3d1';
+                     }
+                 });
+                 
+                 document.querySelectorAll('.accordion-content').forEach(el => {
+                     el.style.color = isDarkMode ? '#d6d3d1' : '#44403c';
+                 });
             });
         });
     </script>
