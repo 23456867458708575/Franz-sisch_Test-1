@@ -34,6 +34,10 @@
             color: white;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
+        body.dark .tab-btn.active {
+            background-color: #0d9488;
+            color: white;
+        }
         .task-card {
             background-color: white;
             border-radius: 0.5rem;
@@ -42,7 +46,7 @@
             margin-bottom: 1rem;
             transition: background-color 0.3s, color 0.3s;
         }
-        .task-card.dark {
+        body.dark .task-card {
             background-color: #292524;
             color: #d6d3d1;
         }
@@ -74,25 +78,25 @@
             padding: 1rem;
             border-radius: 0.5rem;
             border: 1px solid #e7e5e4;
-        }
-        .vocab-card-front.dark {
-             border: 1px solid #44403c;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
         }
         .vocab-card-front {
             background-color: #fcfcfc;
         }
-        .vocab-card-front.dark {
+        body.dark .vocab-card-front {
             background-color: #44403c;
             color: #d6d3d1;
+            border-color: #57534e;
         }
         .vocab-card-back {
             background-color: #f0fdfa;
             color: #134e4a;
             transform: rotateY(180deg);
         }
-        .vocab-card-back.dark {
+        body.dark .vocab-card-back {
             background-color: #115e59;
             color: #f0fdfa;
+            border-color: #115e59;
         }
         .accordion-content {
             display: none;
@@ -118,15 +122,35 @@
             cursor: pointer;
             transition: background-color 0.3s, border-color 0.3s;
         }
-        #darkModeToggle.dark {
+        body.dark #darkModeToggle {
             background-color: #292524;
             border-color: #44403c;
+        }
+        body.dark .tab-btn {
+            background-color: #44403c;
+            color: #d6d3d1;
+            border-color: #57534e;
+        }
+        body.dark .tab-btn:hover:not(.active) {
+            background-color: #57534e;
+        }
+        body.dark .task-card h2, body.dark .task-card h3 {
+            color: #14b8a6;
+        }
+        body.dark h1, body.dark #progressText {
+            color: #14b8a6;
+        }
+        body.dark .text-stone-700 {
+            color: #d6d3d1;
+        }
+        body.dark .text-stone-600 {
+             color: #a8a29e;
         }
     </style>
 </head>
 <body class="text-stone-800">
 
-    <button id="darkModeToggle">☀️</button>
+    <button id="darkModeToggle">🌙</button>
 
     <div class="main-container p-4 md:p-8">
         <header class="text-center mb-8">
@@ -177,7 +201,7 @@
             <section id="day-8" class="day-content hidden">
                  <div class="task-card">
                     <h2 class="text-2xl font-bold mb-4">Gesamter Wortschatz</h2>
-                    <p class="mb-4">Hier findest du alle Vokabeln. Du kannst sie nach Kategorie filtern oder direkt nach einem Wort suchen.</p>
+                    <p class="mb-4 text-stone-700">Hier findest du alle Vokabeln. Du kannst sie nach Kategorie filtern oder direkt nach einem Wort suchen.</p>
                     <div class="flex flex-wrap gap-2 mb-4">
                         <input type="text" id="vocabSearch" placeholder="Suchen..." class="w-full md:w-auto flex-grow p-2 border border-stone-300 rounded-md">
                         <select id="vocabFilter" class="p-2 border border-stone-300 rounded-md">
@@ -345,6 +369,53 @@
             const progressBar = document.getElementById('progressBar');
             const progressText = document.getElementById('progressText');
             const darkModeToggle = document.getElementById('darkModeToggle');
+            
+            // Chart.js initialization moved to the top of the script
+            const ctx = document.getElementById('planChart').getContext('2d');
+            const planChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Tag 1-2: être & avoir', 'Tag 3: -er Verben', 'Tag 4: faire & prendre', 'Tag 5: aller & venir & partir', 'Tag 6-7: Wiederholung & Bilan'],
+                    datasets: [{
+                        label: 'Lernfokus',
+                        data: [25, 15, 15, 15, 30],
+                        backgroundColor: [
+                            '#5eead4',
+                            '#2dd4bf',
+                            '#0d9488',
+                            '#115e59',
+                            '#064e3b'
+                        ],
+                        borderColor: '#f5f5f4',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#44403c',
+                                font: {
+                                    family: 'Inter',
+                                },
+                                boxWidth: 12,
+                                padding: 15,
+                            }
+                        },
+                        tooltip: {
+                             bodyFont: {
+                                family: 'Inter',
+                            },
+                             titleFont: {
+                                family: 'Inter',
+                            },
+                        }
+                    }
+                }
+            });
 
             function createVocabCards(categories) {
                 let html = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">';
@@ -435,6 +506,7 @@
                 } else if (dayNumber == 8) {
                      progressText.textContent = `Wortschatz-Modus. Dein Lernplan ist zu 100% abgeschlossen!`;
                 }
+                updateTheme();
             }
 
             generateDayContent();
@@ -504,6 +576,7 @@
                         </div>
                     </div>
                 `).join('');
+                updateTheme();
             }
 
             function filterAndSearchVocab() {
@@ -536,94 +609,74 @@
 
             populateFullVocabList();
 
-            // Chart.js implementation
-            const ctx = document.getElementById('planChart').getContext('2d');
-            const planChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Tag 1-2: être & avoir', 'Tag 3: -er Verben', 'Tag 4: faire & prendre', 'Tag 5: aller & venir & partir', 'Tag 6-7: Wiederholung & Bilan'],
-                    datasets: [{
-                        label: 'Lernfokus',
-                        data: [25, 15, 15, 15, 30],
-                        backgroundColor: [
-                            '#5eead4',
-                            '#2dd4bf',
-                            '#0d9488',
-                            '#115e59',
-                            '#064e3b'
-                        ],
-                        borderColor: '#f5f5f4',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#44403c',
-                                font: {
-                                    family: 'Inter',
-                                },
-                                boxWidth: 12,
-                                padding: 15,
-                            }
-                        },
-                        tooltip: {
-                             bodyFont: {
-                                family: 'Inter',
-                            },
-                             titleFont: {
-                                family: 'Inter',
-                            },
-                        }
-                    }
-                }
-            });
+            function updateTheme() {
+                const isDarkMode = document.body.classList.contains('dark');
+                
+                // Update text colors based on dark mode
+                const lightText = '#44403c';
+                const darkText = '#d6d3d1';
+                const lightSubtitle = '#57534e';
+                const darkSubtitle = '#a8a29e';
+
+                document.body.style.color = isDarkMode ? darkText : lightText;
+                document.querySelector('header h1').style.color = isDarkMode ? '#14b8a6' : '#0d9488';
+                document.querySelector('header p').style.color = isDarkMode ? darkSubtitle : lightSubtitle;
+                document.querySelector('#progressText').style.color = isDarkMode ? '#14b8a6' : '#0d9488';
+
+                // Update component backgrounds and colors
+                document.querySelectorAll('.task-card').forEach(el => {
+                    el.style.backgroundColor = isDarkMode ? '#292524' : 'white';
+                    el.style.color = isDarkMode ? darkText : lightText;
+                });
+                
+                document.querySelectorAll('.task-card h2, .task-card h3').forEach(el => {
+                    el.style.color = isDarkMode ? '#14b8a6' : '#0d9488';
+                });
+
+                document.querySelectorAll('.day-btn').forEach(btn => {
+                    if (btn.classList.contains('active')) return;
+                    btn.style.backgroundColor = isDarkMode ? '#44403c' : 'white';
+                    btn.style.color = isDarkMode ? darkText : lightText;
+                    btn.style.borderColor = isDarkMode ? '#57534e' : '#e7e5e4';
+                });
+
+                document.querySelectorAll('.vocab-card-front').forEach(card => {
+                    card.style.backgroundColor = isDarkMode ? '#44403c' : '#fcfcfc';
+                    card.style.color = isDarkMode ? darkText : lightText;
+                    card.style.borderColor = isDarkMode ? '#57534e' : '#e7e5e4';
+                });
+
+                document.querySelectorAll('.vocab-card-back').forEach(card => {
+                    card.style.backgroundColor = isDarkMode ? '#115e59' : '#f0fdfa';
+                    card.style.color = isDarkMode ? '#f0fdfa' : '#134e4a';
+                    card.style.borderColor = isDarkMode ? '#115e59' : '#e7e5e4';
+                });
+
+                document.querySelectorAll('#vocabSearch, #vocabFilter').forEach(el => {
+                     el.style.backgroundColor = isDarkMode ? '#292524' : 'white';
+                     el.style.color = isDarkMode ? darkText : lightText;
+                     el.style.borderColor = isDarkMode ? '#57534e' : '#d6d3d1';
+                 });
+                 
+                document.querySelectorAll('.accordion-content').forEach(el => {
+                     el.style.color = isDarkMode ? darkText : lightText;
+                 });
+
+                // Update chart colors
+                planChart.options.plugins.legend.labels.color = isDarkMode ? darkText : lightText;
+                planChart.data.datasets[0].borderColor = isDarkMode ? '#1c1917' : '#f5f5f4';
+                planChart.update();
+            }
 
             // Dark Mode Logic
             darkModeToggle.addEventListener('click', () => {
                 document.body.classList.toggle('dark');
-                const isDarkMode = document.body.classList.contains('dark');
-
-                // Update text colors
-                const textColor = isDarkMode ? '#d6d3d1' : '#44403c';
-                document.querySelector('header p').style.color = isDarkMode ? '#a8a29e' : '#57534e';
-                document.querySelector('#progressText').style.color = isDarkMode ? '#14b8a6' : '#0d9488';
-                
-                // Update component backgrounds and text
-                document.querySelectorAll('.task-card, .vocab-card-front, .vocab-card-back, .tab-btn').forEach(el => el.classList.toggle('dark', isDarkMode));
-
-                // Update chart colors
-                planChart.options.plugins.legend.labels.color = textColor;
-                planChart.data.datasets[0].borderColor = isDarkMode ? '#1c1917' : '#f5f5f4';
-                planChart.update();
-
-                darkModeToggle.textContent = isDarkMode ? '☀️' : '🌙';
-
-                 document.querySelectorAll('.vocab-card-front').forEach(card => {
-                    const isDark = document.body.classList.contains('dark');
-                    card.style.borderColor = isDark ? '#44403c' : '#e7e5e4';
-                 });
-                 
-                 document.querySelectorAll('#vocabSearch, #vocabFilter').forEach(el => {
-                     if (isDarkMode) {
-                         el.style.backgroundColor = '#292524';
-                         el.style.color = '#d6d3d1';
-                         el.style.borderColor = '#44403c';
-                     } else {
-                         el.style.backgroundColor = 'white';
-                         el.style.color = '#44403c';
-                         el.style.borderColor = '#d6d3d1';
-                     }
-                 });
-                 
-                 document.querySelectorAll('.accordion-content').forEach(el => {
-                     el.style.color = isDarkMode ? '#d6d3d1' : '#44403c';
-                 });
+                updateTheme();
+                darkModeToggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
             });
+
+            populateFullVocabList();
+            generateDayContent();
         });
     </script>
 </body>
